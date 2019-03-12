@@ -235,7 +235,6 @@ static void _opt_default(bool first_pass)
 	opt.cpu_freq_min		= NO_VAL;
 	opt.cpus_per_task		= 0;
 	opt.cpus_set			= false;
-	opt.distribution		= SLURM_DIST_UNKNOWN;
 	opt.hint_env			= NULL;
 	opt.hint_set			= false;
 	opt.job_flags			= 0;
@@ -256,7 +255,6 @@ static void _opt_default(bool first_pass)
 	opt.ntasks_per_socket		= NO_VAL;
 	opt.ntasks_set			= false;
 	xfree(opt.partition);
-	opt.plane_size			= NO_VAL;
 	opt.power_flags			= 0;
 	opt.pn_min_memory		= NO_VAL64;
 	opt.req_switch			= -1;
@@ -597,7 +595,6 @@ static struct option long_options[] = {
 	{"job-name",      required_argument, 0, 'J'},
 	{"kill-on-invalid-dep", required_argument, 0, LONG_OPT_KILL_INV_DEP},
 	{"no-kill",       optional_argument, 0, 'k'},
-	{"distribution",  required_argument, 0, 'm'},
 	{"tasks",         required_argument, 0, 'n'},
 	{"ntasks",        required_argument, 0, 'n'},
 	{"nodes",         required_argument, 0, 'N'},
@@ -1154,17 +1151,6 @@ static void _set_options(int argc, char **argv)
 				opt.no_kill = false;
 			} else
 				opt.no_kill = true;
-			break;
-		case 'm':
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			opt.distribution = verify_dist_type(optarg,
-							    &opt.plane_size);
-			if (opt.distribution == SLURM_DIST_UNKNOWN) {
-				error("distribution type `%s' "
-				      "is not recognized", optarg);
-				exit(error_exit);
-			}
 			break;
 		case 'n':
 			opt.ntasks_set = true;
