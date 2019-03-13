@@ -201,7 +201,6 @@ static void _opt_default(bool first_pass)
 		xfree(opt.gpus_per_socket);
 		xfree(opt.gpus_per_task);
 		sbopt.ifname		= xstrdup("/dev/null");
-		opt.immediate		= false;
 		opt.mem_per_gpu		= NO_VAL64;
 		opt.nice		= NO_VAL;
 		opt.no_kill		= false;
@@ -577,7 +576,6 @@ static struct option long_options[] = {
 	{"nodefile",      required_argument, 0, 'F'},
 	{"help",          no_argument,       0, 'h'},
 	{"input",         required_argument, 0, 'i'},
-	{"immediate",     no_argument,       0, 'I'},
 	{"job-name",      required_argument, 0, 'J'},
 	{"kill-on-invalid-dep", required_argument, 0, LONG_OPT_KILL_INV_DEP},
 	{"no-kill",       optional_argument, 0, 'k'},
@@ -1117,9 +1115,6 @@ static void _set_options(int argc, char **argv)
 				sbopt.ifname = xstrdup("/dev/null");
 			else
 				sbopt.ifname = xstrdup(optarg);
-			break;
-		case 'I':
-			info("--immediate option is not supported for the sbatch command, ignored");
 			break;
 		case 'J':
 			xfree(opt.job_name);
