@@ -191,8 +191,6 @@ static void _opt_default(bool first_pass)
 	opt.cores_per_socket		= NO_VAL; /* requested cores */
 	opt.cpus_per_task		= 0;
 	opt.cpus_set			= false;
-	opt.hint_env			= NULL;
-	opt.hint_set			= false;
 	opt.job_flags			= 0;
 	opt.max_nodes			= 0;
 	opt.min_nodes			= 1;
@@ -408,10 +406,6 @@ _process_env_var(env_vars_t *e, const char *val)
 				error("%s=%s invalid", e->var, val);
 		}
 		break;
-
-	case OPT_HINT:
-		opt.hint_env = xstrdup(val);
-		break;
 	case OPT_DISTRIB:
 		opt.distribution = verify_dist_type(val,
 						    &opt.plane_size);
@@ -480,7 +474,6 @@ static struct option long_options[] = {
 	{"export",        required_argument, 0, LONG_OPT_EXPORT},
 	{"export-file",   required_argument, 0, LONG_OPT_EXPORT_FILE},
 	{"gid",           required_argument, 0, LONG_OPT_GID},
-	{"hint",          required_argument, 0, LONG_OPT_HINT},
 	{"ignore-pbs",    no_argument,       0, LONG_OPT_IGNORE_PBS},
 	{"no-requeue",    no_argument,       0, LONG_OPT_NO_REQUEUE},
 	{"ntasks-per-core",  required_argument, 0, LONG_OPT_NTASKSPERCORE},
@@ -1071,22 +1064,6 @@ static void _set_options(int argc, char **argv)
 			pack_env.ntasks_per_core = opt.ntasks_per_core;
 			opt.ntasks_per_core_set = true;
 			break;
-		case LONG_OPT_HINT:
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			/* Keep after other options filled in */
-			if (verify_hint(optarg,
-					&opt.sockets_per_node,
-					&opt.cores_per_socket,
-					&opt.threads_per_core,
-					&opt.ntasks_per_core,
-					NULL)) {
-				exit(error_exit);
-			}
-			opt.hint_set = true;
-			opt.ntasks_per_core_set = true;
-			opt.threads_per_core_set = true;
-			break;
 		case LONG_OPT_BATCH:
 			xfree(sbopt.batch_features);
 			sbopt.batch_features = xstrdup(optarg);
@@ -1184,10 +1161,9 @@ static bool _opt_verify(void)
 		verified = false;
 	}
 
-	if (opt.hint_env &&
-	    (!opt.hint_set && !opt.ntasks_per_core_set &&
-	     !opt.threads_per_core_set)) {
-		if (verify_hint(opt.hint_env,
+	if (opt.hint &&
+	    !opt.ntasks_per_core_set && !opt.threads_per_core_set) {
+		if (verify_hint(opt.hint,
 				&opt.sockets_per_node,
 				&opt.cores_per_socket,
 				&opt.threads_per_core,
